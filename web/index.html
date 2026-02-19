@@ -1,8 +1,60 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset='UTF-8'/><meta name='viewport' content='width=device-width, initial-scale=1.0'/>
-    <title>Onyx Messenger</title>
-  </head>
-  <body><div id='root'></div><script type='module' src='/src/main.jsx'></script></body>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexChat v3 · Onyx</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+<div id="authOv">
+  <div class="auth-card">
+    <div class="auth-logo">💬</div><div class="auth-title">NexChat</div>
+    <div class="auth-sub">Мессенджер нового поколения.<br>Безопасно. Быстро. Красиво.</div>
+    <div id="stepPhone" class="auth-step">
+      <div class="inp-wrap"><span class="flag">🇷🇺</span><input class="a-inp pl" id="phoneInp" type="tel" placeholder="+10000000001"></div>
+      <button class="auth-btn" id="sendCodeBtn">Получить код →</button><p class="auth-hint" id="authHint">Отправим SMS с кодом подтверждения</p>
+    </div>
+    <div id="stepCode" class="auth-step" style="display:none">
+      <input class="a-inp" id="codeInp" maxlength="6" placeholder="123456"><input class="a-inp" id="nameInp" placeholder="Ваше имя (опц.)">
+      <button class="auth-btn" id="verifyBtn">Войти</button><button class="auth-back" id="backBtn">← Изменить номер</button>
+    </div>
+  </div>
+</div>
+
+<div id="lb" onclick="window.closeLb?.()"><img id="lbImg" src="" alt=""><button class="lb-close" onclick="window.closeLb?.()">×</button></div>
+
+<div id="app">
+  <div class="sidebar" id="sb">
+    <div class="sb-head">
+      <button class="ib" id="menuBtn">☰</button>
+      <input class="sb-search" id="chatSearch" placeholder="Поиск...">
+      <button class="ib theme-btn" id="themeBtn">◐</button>
+      <button class="ib" id="newChatBtn">＋</button>
+    </div>
+    <div class="chat-list" id="chatList"></div>
+    <div class="sb-foot"><div class="avatar" id="myAv">Я</div><div style="flex:1;min-width:0"><div class="sb-me-name" id="myName">—</div><div class="sb-me-status" style="color:var(--accent)">● В сети</div></div></div>
+  </div>
+
+  <div class="chat-main" id="chatMain">
+    <div class="chat-bg"></div>
+    <div class="topbar" id="topbar">
+      <div class="avatar" id="topAv"></div><div class="top-info"><div class="top-name" id="topName">—</div><div class="top-status" id="topStatus">—</div></div>
+    </div>
+    <div class="welcome" id="welcome"><div class="welcome-ico">💬</div><div class="welcome-title">NexChat</div><div class="welcome-sub">Выберите чат для общения</div></div>
+    <div class="msgs-wrap" id="msgsWrap" style="display:none"><div class="msgs" id="msgs"></div></div>
+    <div class="inp-area" id="inpArea" style="display:none">
+      <div class="attach-popup" id="attPopup"><div class="att-opt" id="imgPick"><span class="ao-ico">🖼️</span><span>Фото</span></div><div class="att-opt" id="filePick"><span class="ao-ico">📄</span><span>Файл</span></div></div>
+      <button class="att-btn" id="attBtn">📎</button>
+      <div class="msg-wrap-inp"><textarea class="msg-ta" id="msgTa" rows="1" placeholder="Написать..."></textarea></div>
+      <button class="send-btn" id="sendBtn">➤</button>
+      <input type="file" id="fileIn" style="display:none"><input type="file" id="imgIn" accept="image/*" style="display:none">
+    </div>
+  </div>
+</div>
+
+<div class="overlay-base" id="createModal"><div class="modal cm-form"><h3>Новый диалог</h3><input class="cm-inp" id="userSearchInp" placeholder="Телефон / username"><div id="userResults"></div><div class="cm-actions"><button class="cm-cancel" id="closeCreateBtn">Отмена</button></div></div></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
 </html>
