@@ -20,11 +20,11 @@ r.get('/:chatId', asyncHandler(async (req, res) => {
 }));
 
 async function sendMessage(req, res) {
-  const { chatId, clientMessageId, body = '', type = 'text', attachmentUrl = null } = req.body || {};
+  const { chatId, clientMessageId, body = '', type = 'text', attachments = [] } = req.body || {};
   const cid = chatId || req.params.chatId;
   if (!cid) throw badRequest('chatId is required');
   if (!clientMessageId) throw badRequest('clientMessageId is required');
-  if (!body && !attachmentUrl) throw badRequest('body or attachmentUrl is required');
+  if (!body && !attachments.length) throw badRequest('body or attachments are required');
 
   const member = await query('SELECT 1 FROM chat_members WHERE chat_id=$1 AND user_id=$2', [cid, req.user.sub]);
   if (!member.rowCount) return res.status(403).json({ ok: false, error: { code: 'FORBIDDEN', message: 'Not a chat member' } });
@@ -32,14 +32,16 @@ async function sendMessage(req, res) {
   const dedupe = await query('SELECT * FROM messages WHERE chat_id=$1 AND client_message_id=$2', [cid, clientMessageId]);
   if (dedupe.rowCount) return res.json({ ok: true, message: messageDto(dedupe.rows[0]), deduplicated: true });
 
-  const ins = await query(`INSERT INTO messages(chat_id,sender_id,client_message_id,body,type,attachment_url,status)
-    VALUES($1,$2,$3,$4,$5,$6,'sent') RETURNING *`,
-    [cid, req.user.sub, clientMessageId, body, type, attachmentUrl]);
+  const ins = await query(`INSERT INTO messages(chat_id,sender_id,client_message_id,body,type,attachment_url,attachments,status)
+    VALUES($1,$2,$3,$4,$5,$6,$7,'sent') RETURNING *`,
+    [cid, req.user.sub, clientMessageId, body, type, attachments[0]?.url || null, JSON.stringify(attachments)]);
+
+  await query('UPDATE chats SET updated_at=now() WHERE id=$1', [cid]);
 
   const msg = messageDto(ins.rows[0]);
   const members = await query('SELECT user_id FROM chat_members WHERE chat_id=$1', [cid]);
   for (const m of members.rows) {
-    sendToUser(m.user_id, 'MessageCreated', msg);
+    sendToUser(m.user_id, 'messageCreated', msg);
     if (m.user_id !== req.user.sub) pushStub(m.user_id, { type: 'new_message', chatId: cid });
   }
   res.status(201).json({ ok: true, message: msg });
@@ -52,7 +54,7 @@ r.post('/:chatId/:messageId/delivered', asyncHandler(async (req, res) => {
   const up = await query("UPDATE messages SET status='delivered' WHERE id=$1 RETURNING *", [req.params.messageId]);
   if (!up.rowCount) throw badRequest('message not found', 'NOT_FOUND');
   const msg = messageDto(up.rows[0]);
-  sendToUser(msg.senderId, 'MessageDelivered', msg);
+  sendToUser(msg.senderId, 'messageDelivered', msg);
   res.json({ ok: true, message: msg });
 }));
 
@@ -60,7 +62,7 @@ r.post('/:chatId/:messageId/read', asyncHandler(async (req, res) => {
   const up = await query("UPDATE messages SET status='read' WHERE id=$1 RETURNING *", [req.params.messageId]);
   if (!up.rowCount) throw badRequest('message not found', 'NOT_FOUND');
   const msg = messageDto(up.rows[0]);
-  sendToUser(msg.senderId, 'MessageRead', msg);
+  sendToUser(msg.senderId, 'messageRead', msg);
   res.json({ ok: true, message: msg });
 }));
 

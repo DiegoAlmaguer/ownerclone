@@ -16,7 +16,9 @@ export function chatDto(row) {
     title: row.title,
     ownerId: row.owner_id,
     updatedAt: row.updated_at,
-    createdAt: row.created_at
+    createdAt: row.created_at,
+    lastMessage: row.last_message || null,
+    unreadCount: row.unread_count || 0
   };
 }
 
@@ -29,6 +31,7 @@ export function messageDto(row) {
     body: row.body,
     type: row.type,
     attachmentUrl: row.attachment_url,
+    attachments: row.attachments || [],
     status: row.status,
     createdAt: row.created_at
   };

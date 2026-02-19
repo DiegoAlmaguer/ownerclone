@@ -6,7 +6,7 @@
   "properties": {
     "event": {
       "type": "string",
-      "enum": ["MessageCreated", "MessageDelivered", "MessageRead", "MessageEdited", "MessageDeleted"]
+      "enum": ["messageCreated", "messageDelivered", "messageRead", "messageEdited", "messageDeleted"]
     },
     "payload": {
       "type": "object",

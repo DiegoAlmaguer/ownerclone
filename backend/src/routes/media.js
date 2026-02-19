@@ -12,7 +12,7 @@ r.post('/upload', auth, upload.single('file'), asyncHandler(async (req, res) => 
   if (!req.file) return res.status(400).json({ ok: false, error: { code: 'BAD_REQUEST', message: 'file is required' } });
   const key = `${req.user.sub}/${uuid()}-${req.file.originalname}`;
   const url = await uploadBuffer(key, req.file.buffer, req.file.mimetype);
-  res.json({ ok: true, file: { url, key } });
+  res.json({ ok: true, attachment: { url, key, name: req.file.originalname, size: req.file.size, contentType: req.file.mimetype } });
 }));
 
 export default r;

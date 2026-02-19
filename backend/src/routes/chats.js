@@ -8,9 +8,13 @@ const r = Router();
 r.use(auth);
 
 r.get('/', asyncHandler(async (req, res) => {
-  const rs = await query(`SELECT c.* FROM chats c
+  const rs = await query(`SELECT c.*, (
+      SELECT m.body FROM messages m WHERE m.chat_id=c.id ORDER BY m.created_at DESC LIMIT 1
+    ) AS last_message
+    FROM chats c
     JOIN chat_members m ON m.chat_id=c.id
-    WHERE m.user_id=$1 ORDER BY c.updated_at DESC`, [req.user.sub]);
+    WHERE m.user_id=$1
+    ORDER BY c.updated_at DESC`, [req.user.sub]);
   res.json({ ok: true, chats: rs.rows.map(chatDto) });
 }));
 
@@ -33,24 +37,6 @@ r.post('/direct', asyncHandler(async (req, res) => {
   await query('INSERT INTO chat_members(chat_id,user_id,role) VALUES ($1,$2,$3),($1,$4,$3) ON CONFLICT DO NOTHING', [chat.rows[0].id, me, 'member', peerUserId]);
 
   res.status(201).json({ ok: true, chat: chatDto(chat.rows[0]) });
-}));
-
-r.post('/group', asyncHandler(async (req, res) => {
-  const { title, memberIds = [] } = req.body || {};
-  const me = req.user.sub;
-  const chat = await query('INSERT INTO chats(type,title,owner_id) VALUES($1,$2,$3) RETURNING *', ['group', title || 'New Group', me]);
-  await query('INSERT INTO chat_members(chat_id,user_id,role) VALUES($1,$2,$3)', [chat.rows[0].id, me, 'owner']);
-  for (const id of memberIds) {
-    await query('INSERT INTO chat_members(chat_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT DO NOTHING', [chat.rows[0].id, id, 'member']);
-  }
-  res.status(201).json({ ok: true, chat: chatDto(chat.rows[0]) });
-}));
-
-r.post('/:chatId/members', asyncHandler(async (req, res) => {
-  const { userId } = req.body || {};
-  if (!userId) throw badRequest('userId is required');
-  await query('INSERT INTO chat_members(chat_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT DO NOTHING', [req.params.chatId, userId, 'member']);
-  res.json({ ok: true });
 }));
 
 export default r;

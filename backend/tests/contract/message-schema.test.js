@@ -6,7 +6,7 @@ const schema = JSON.parse(fs.readFileSync(new URL('../../src/schemas/message-eve
 
 test('contract schema includes required events', () => {
   const events = schema.properties.event.enum;
-  for (const name of ['MessageCreated', 'MessageDelivered', 'MessageRead']) {
+  for (const name of ['messageCreated', 'messageDelivered', 'messageRead']) {
     assert.ok(events.includes(name));
   }
 });

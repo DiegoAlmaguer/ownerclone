@@ -16,7 +16,13 @@ export function errorHandler(err, _req, res, _next) {
     }
   };
   if (status >= 500) {
-    console.error('[backend-error]', err);
+    console.error('[backend-error]', {
+      route: _req?.originalUrl,
+      method: _req?.method,
+      userId: _req?.user?.sub,
+      message: err.message,
+      stack: err.stack
+    });
   }
   res.status(status).json(payload);
 }
